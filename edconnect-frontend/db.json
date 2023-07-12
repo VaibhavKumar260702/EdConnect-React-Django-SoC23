@@ -1,0 +1,62 @@
+{
+  "student": [
+    {
+      "id": 1,
+      "name": "vaibhav",
+      "roll": "vaibhav",
+      "password": "vaibhav",
+      "courses": [
+        1,
+        2,
+        1,
+        2
+      ]
+    }
+  ],
+  "ta": [
+    {
+      "id": 1,
+      "roll": "vaibhav",
+      "password": "vaibhav",
+      "courses": [
+        1,
+        2,
+        3
+      ]
+    },
+    {
+      "id": 2,
+      "roll": "20d070086",
+      "password": "god",
+      "courses": [
+        1,
+        2,
+        3
+      ]
+    }
+  ],
+  "course": [
+    {
+      "id": 1,
+      "code": "CS213",
+      "name": "DSA"
+    },
+    {
+      "id": 2,
+      "code": "EE338",
+      "name": "DSP"
+    },
+    {
+      "id": 3,
+      "code": "CS747",
+      "name": "FILA"
+    }
+  ],
+  "admin": [
+    {
+      "id": 1,
+      "username": "admin",
+      "password": "admin"
+    }
+  ]
+}
