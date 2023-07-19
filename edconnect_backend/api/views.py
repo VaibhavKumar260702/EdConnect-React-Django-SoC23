@@ -3,9 +3,11 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import Admin_infoSerializer,Ta_infoSerializer,Student_infoSerializer
-from .models import Admin_info,Ta_info,Student_info,Courses
+from .models import Admin_info,Ta_info,Student_info,Courses,Attendance_sessions,Attendance_Records
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
+from datetime import datetime,date,timedelta
+from django.utils import timezone
 
 @csrf_exempt
 @api_view(['POST'])
@@ -89,7 +91,12 @@ def Student_data(request,id):
 @api_view(['GET'])       
 def Student_courses_info(request,id):
     if request.method =="GET":
-        courses= Student_info.objects.filter(id=id).first().course.values()
+        courses = []
+        ta_list = Student_info.objects.filter(id=id).first().ta.values()
+        for ta in ta_list:
+            ta_id = ta['id']
+            course_info = Ta_info.objects.filter(id=ta_id).first().course.values().first()
+            courses.append(course_info)
         return Response(courses)
     
 @csrf_exempt
@@ -136,6 +143,23 @@ def Ta_courseAdd(request,taid):
             ta.first().save()
             return Response(1)
     return Response(0)
+
+
+@api_view(['POST'])
+def Student_courseAdd(request,studentid):
+    #it return id of student if student is valid otherwise -1
+
+    s = Student_info.objects.filter(id = studentid)
+
+    if request.method=='POST':
+        privatecode = request.data['privatecode'] #private code to join some TA tutorial
+        if s.exists() and Ta_info.objects.filter(privatecode=privatecode).exists():
+            ta = Ta_info.objects.filter(privatecode=privatecode)
+            s.first().ta.add(*ta) 
+            s.first().save()
+            return Response(1)
+    return Response(0)
+
 
 @api_view(['GET'])
 @csrf_exempt 
@@ -195,3 +219,113 @@ def Add_course(request):
         course.save()
         return Response(1)
     Response(0)
+
+
+@api_view(['POST'])
+@csrf_exempt 
+def Get_attendance(request):
+    data = request.data
+    if request.method == 'POST':
+        student_roll = data['roll']
+        coursecode = data['coursecode']
+        all_attendance_records = Attendance_Records.objects.filter(Roll=student_roll).values()
+        session_ids = [d.get('Session_id') for d in all_attendance_records]
+        attendance_records = Attendance_sessions.objects.filter(id__in=session_ids,CourseCode = coursecode).values()
+        attendance_dates = [str(d.get('Date')) for d in attendance_records]
+        converted_dates=[]
+        for date_str in attendance_dates:
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            formatted_date = date_obj.strftime('%b-%d-%Y')
+            converted_dates.append(formatted_date)
+        return Response(converted_dates)
+    
+
+@api_view(['POST'])
+@csrf_exempt 
+def Check_session(request): #this is for student 
+    #if session is present within 5 min of range then return true or may be session id;
+    data=request.data
+    if request.method == 'POST':
+        student_roll = data['roll']
+        coursecode = data['coursecode']
+        all_tas = Student_info.objects.filter(Roll=student_roll).first().ta.values()
+        all_tas_ids = [d.get('id') for d in all_tas]
+        for ta_id in all_tas_ids:
+            ta_course_info = Ta_info.objects.filter(id=ta_id).first().course.values()[0]
+            if ta_course_info['courseCode'] == coursecode: # this is the ta
+                #check if some session is there or not by this ta within 5 min of time
+                current_time = timezone.localtime(timezone.now())
+                target_time = current_time - timedelta(minutes=5)
+                session = Attendance_sessions.objects.filter(Ta__id = ta_id,CourseCode = coursecode,Date = date.today(),Start__gte=target_time)
+                if session.exists():
+                    return Response(session.first().id)
+        return Response(-1)
+
+@api_view(['POST'])
+@csrf_exempt 
+def Mark_attendance(request):
+    data = request.data
+    if request.method == 'POST':
+        student_roll = data['roll']
+        session_id = data['sessionid']
+        instance = Attendance_Records.objects.create(
+            Session = Attendance_sessions.objects.filter(id = session_id).first(),
+            Roll = student_roll,
+            Attend_time = timezone.localtime(timezone.now()).replace(microsecond=0).time()
+        )
+        instance.save()
+        return Response(1)
+    return Response(0)
+
+        
+@api_view(['POST'])
+@csrf_exempt 
+def Start_attendance(request):
+    data = request.data
+    course_code = data['coursecode']
+    ta_id = data['taid']    
+    ta = Ta_info.objects.filter(id = ta_id).first()
+    if request.method == 'POST':
+        instance = Attendance_sessions.objects.create(
+            CourseCode = course_code,
+            Ta = ta,
+            Start = timezone.localtime(timezone.now()).replace(microsecond=0).time()
+        )
+        instance.save()
+        return Response(instance.id) # 1 means new session is started
+    return Response(-1)
+
+
+@api_view(['POST'])
+@csrf_exempt 
+def Check_ta_session(request): #this is for student 
+    data = request.data
+    course_code = data['coursecode']
+    ta_id = data['taid']    
+    ta = Ta_info.objects.filter(id = ta_id).first()
+    current_time = timezone.localtime(timezone.now())
+    target_time = current_time - timedelta(minutes=5)
+    session = Attendance_sessions.objects.filter(CourseCode=course_code,Ta = ta,Date = date.today(),Start__gte=target_time)
+    if session.exists():
+        return Response(session.first().id)
+    return Response(-1)
+
+@api_view(['POST'])
+@csrf_exempt 
+def Get_attendance_list(request): #this is for student 
+    data=request.data
+    course_code = data['coursecode']
+    ta_id = data['taid']
+    _date = data['date']
+    ta = Ta_info.objects.filter(id = ta_id).first()
+    session = Attendance_sessions.objects.filter(CourseCode=course_code,Ta=ta,Date=_date)
+    if session.exists():
+        Attendance_records = Attendance_Records.objects.filter(Session=session.first()).values()
+        Attendance_list = []
+        for obj in Attendance_records:
+           new_obj = {"name":Student_info.objects.filter(Roll=obj['Roll']).first().Name,"roll":obj['Roll'],"time":obj['Attend_time']}
+           Attendance_list.append(new_obj)
+        return Response(Attendance_list)
+    
+    return Response([])
+

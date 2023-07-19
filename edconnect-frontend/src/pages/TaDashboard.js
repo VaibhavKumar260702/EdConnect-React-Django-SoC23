@@ -1,5 +1,5 @@
 import NavbarComp from "../components/Navbar";
-import { useLocation } from "react-router-dom";
+import { useLocation,Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import TaAddCourseModal from "../components/TaAddCourseModal"
 
@@ -84,8 +84,10 @@ function TaDashboard() {
     <div>
       <NavbarComp username={taInfo.Name} />
 
+      {coursesList.length===0?
       <button className="btn btn-primary text-center" onClick={(e)=>ToggleModal()}>Add Course</button>
-
+      :null}
+      
       {(showModal===true?<TaAddCourseModal showModal = {showModal} ToggleModal={ToggleModal} addCourse={addCourse}/>:null)}
 
       <table className="my-table">
@@ -93,6 +95,7 @@ function TaDashboard() {
           <tr>
             <th>Course Code</th>
             <th>Course Name </th>
+            <th>Link</th>
             <th> Delete </th>
           </tr>
         </thead>
@@ -101,6 +104,7 @@ function TaDashboard() {
             <tr key={i}>
               <td>{course.courseCode}</td>
               <td>{course.courseName}</td>
+              <td><Link to={`/taCoursePage/${taID}/${course.courseCode}`} state={[taInfo,course]}><button>Open</button> </Link></td>
               <td>
                 <button
                   className="btn btn-danger btn-sm"
