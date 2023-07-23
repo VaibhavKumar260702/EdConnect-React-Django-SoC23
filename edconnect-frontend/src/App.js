@@ -8,6 +8,8 @@ import TaDashboard from "./pages/TaDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import StudentCoursePage from "./pages/StudentCoursePage";
 import TaCoursePage from "./pages/TaCoursePage";
+import TaDiscussionFollowComp from "./pages/TaDiscussionFollowComp";
+import StudentDiscussionFollowComp from "./pages/StudentDiscussionFollowComp";
 
 function App() {
   return (
@@ -22,7 +24,9 @@ function App() {
           <Route path="/taDashboard/:id" exact element={<TaDashboard/>}/>
           <Route path="/adminDashboard/:id" exact element={<AdminDashboard/>}/>
           <Route path="/studentCoursePage/:id/:courseCode" exact element={<StudentCoursePage/>}/>
+          <Route path="/studentCoursePage/:id/:courseCode/discussionFollowUps" exact element={<StudentDiscussionFollowComp/>}/>
           <Route path="/taCoursePage/:id/:courseCode" exact element={<TaCoursePage/>}/>
+          <Route path="/taCoursePage/:id/:courseCode/discussionFollowUps" exact element={<TaDiscussionFollowComp/>}/>
         </Routes>
     </Router>
   );

@@ -92,7 +92,7 @@ export default function StudentAttendanceComp({studentInfo}) {
             let data = await response.text();
             setsessionid(parseInt(data));
             if(data !== '-1')setbuttonvisible(true);
-            else {alert("TA have not started attendance yet")}
+            else {alert("There is no attendance right now")}
           }
         )();
         

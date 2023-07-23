@@ -17,10 +17,6 @@
   overflow: hidden;
 }
 
-.ta-add-course {
-
-}
-
 td,
 th {
   padding: 15px 20px;
@@ -43,3 +39,17 @@ th{
    tr:nth-child(even){
     background-color: #eeeeee;
    }
+
+   .hand-cursor {
+    cursor: pointer;
+  }
+
+
+  .highlighted-div:hover {
+    background-color: #a3d2dc;
+    /* border: 3px solid #d92424;  */
+  }
+
+  .my-custom-card-bg{
+    background-color: #908fd7;
+  }

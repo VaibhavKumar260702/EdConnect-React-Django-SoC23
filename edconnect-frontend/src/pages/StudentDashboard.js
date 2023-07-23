@@ -87,7 +87,7 @@ function StudentDashboard() {
             <tr key={i} data-href="/">
               <td>{course.courseCode}</td>
               <td>{course.courseName}</td>
-              <td><Link to={`/studentCoursePage/${studentID}/${course.courseCode}`} state={studentInfo}><button>Open</button> </Link></td>
+              <td><Link to={`/studentCoursePage/${studentID}/${course.courseCode}`} state={[studentInfo,course]}><button>Open</button> </Link></td>
             </tr>
           ))}
         </tbody>

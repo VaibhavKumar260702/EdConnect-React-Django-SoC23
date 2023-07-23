@@ -3,7 +3,7 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from .serializers import Admin_infoSerializer,Ta_infoSerializer,Student_infoSerializer
-from .models import Admin_info,Ta_info,Student_info,Courses,Attendance_sessions,Attendance_Records
+from .models import *
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.parsers import JSONParser
 from datetime import datetime,date,timedelta
@@ -329,3 +329,173 @@ def Get_attendance_list(request): #this is for student
     
     return Response([])
 
+
+@api_view(['POST'])
+@csrf_exempt 
+def Get_announcement_list(request): #this is for student 
+    data=request.data
+    ta_id = data['taid']
+    course_code = data['coursecode']
+    ta = Ta_info.objects.filter(id=ta_id).first()
+    announcements = Announcements.objects.filter(Ta = ta, CourseCode=course_code).order_by('-Date', '-Time').values('id','title', 'description', 'Date', 'Time')
+    for announcement in announcements:
+        announcement['Time'] = announcement['Time'].strftime('%H:%M:%S')  
+    
+    return Response(announcements)
+
+@api_view(['POST'])
+@csrf_exempt 
+def Make_announcement(request):
+    data = request.data
+    course_code = data['coursecode']
+    ta_id = data['taid']    
+    title = data['title']
+    description = data['description']
+    ta = Ta_info.objects.filter(id = ta_id).first()
+    if request.method == 'POST':
+        instance = Announcements.objects.create(
+            CourseCode = course_code,
+            Ta = ta,
+            title=title,
+            description=description
+
+        )
+        instance.save()
+        return Response(1)
+    Response(0)
+
+@api_view(['POST'])
+@csrf_exempt
+def Get_ta_info(request):
+    data=request.data
+    student_id = data['studentid']
+    course_code = data['coursecode']
+    student = Student_info.objects.filter(id=student_id).first()
+    course = Courses.objects.filter(courseCode = course_code).first()
+    if request.method == 'POST': 
+        return Response(student.ta.filter(course=course).values('id','Name','Roll')[0])
+    
+
+@api_view(['POST'])
+@csrf_exempt
+def Get_ta_list(request):
+    data=request.data
+    course_code = data['coursecode']
+    course = Courses.objects.filter(courseCode = course_code).first()
+    ta_list = Ta_info.objects.filter(course = course).values('id','Name','Roll')
+    return Response(ta_list)
+
+@api_view(['POST'])
+@csrf_exempt
+def Get_student_list(request):
+    data=request.data
+    ta_id = data['taid']
+    ta = Ta_info.objects.filter(id=ta_id).first()
+    students_list = Student_info.objects.filter(ta=ta).values('id','Name','Roll')
+    return Response(students_list)
+
+@api_view(['POST'])
+@csrf_exempt
+def Get_discussion_list(request):
+    data = request.data
+    ta_id = data['taid']
+    course_code = data['coursecode']
+    if request.method == 'POST':
+        discussions_by_ta = Discussion.objects.filter(CourseCode=course_code, User_type__model='ta_info', User_id=ta_id)
+        discussions_related_to_ta = Discussion.objects.filter(CourseCode=course_code, User_type__model='student_info', User_id__in=Ta_info.objects.get(id=ta_id).student_info_set.values_list('id', flat=True))
+        desired_discussions = (discussions_by_ta | discussions_related_to_ta).order_by('-Date', '-Time')
+        desired_discussions_with_user_info = []
+        for discussion in desired_discussions:
+            if discussion.User_type.model == 'ta_info':
+                user = Ta_info.objects.get(id=discussion.User_id)
+                user_type = 'TA'
+            else:
+                user = Student_info.objects.get(id=discussion.User_id)
+                user_type = 'Student'
+
+            user_info = {
+                'id':discussion.id,
+                'CourseCode': discussion.CourseCode,
+                'Date': discussion.Date,
+                'Time': discussion.Time.strftime('%H:%M:%S'),
+                'title': discussion.title,
+                'description': discussion.description,
+                'Name': user.Name,
+                'Roll': user.Roll,
+                'User_type': user_type,
+                'discussion_type':discussion.Discussion_type
+            }
+            desired_discussions_with_user_info.append(user_info)
+        return Response(desired_discussions_with_user_info)
+
+@api_view(['GET'])
+def Get_discussionfollowups_list(request,id):
+    followup_discussions = Discussion_followup.objects.filter(ParentDiscussionId=id).order_by('-Date', '-Time')
+    followup_discussions_with_user_info = []
+    for discussion in followup_discussions:
+        if discussion.User_type.model == 'ta_info':
+            user = Ta_info.objects.get(id=discussion.User_id)                
+            user_type = 'TA'
+        else:
+            user = Student_info.objects.get(id=discussion.User_id)
+            user_type = 'Student'
+
+        user_info = {
+            'id':discussion.id,
+            'Date': discussion.Date,
+            'Time': discussion.Time.strftime('%H:%M:%S'),
+            'description': discussion.description,
+            'Name': user.Name,
+            'Roll': user.Roll,
+            'User_type':user_type
+        }
+        followup_discussions_with_user_info.append(user_info)
+    return Response(followup_discussions_with_user_info)
+
+@api_view(['POST'])
+def Add_discussion(request):
+    data = request.data
+    if request.method == 'POST':
+        course_code = data['coursecode']
+        user_id = data['id'] 
+        if data['usertype']==1:
+            user_instance = Ta_info.objects.get(id=user_id)
+        else:
+            user_instance = Student_info.objects.get(id=user_id)
+        user_type = ContentType.objects.get_for_model(user_instance)
+        discussion_type = Discussion.GENERAL if data['discussiontype']=='0' else Discussion.DOUBTS 
+        title = data['title']
+        description = data['description']
+
+        new_discussion = Discussion(
+            CourseCode=course_code,
+            User_type=user_type,
+            User_id=user_id,
+            Discussion_type=discussion_type,
+            title=title,
+            description=description,
+        )
+        new_discussion.save()
+    return Response(1)
+
+@api_view(['POST'])
+def Add_followup(request):
+    data=request.data
+    print(data)
+    if request.method == 'POST':
+        user_id = data['userid'] 
+        post_id = data['postid'] 
+        if data['usertype']==1:
+            user_instance = Ta_info.objects.get(id=user_id)
+        else:
+            user_instance = Student_info.objects.get(id=user_id)
+        user_type = ContentType.objects.get_for_model(user_instance)
+        description = data['description']
+        new_followup = Discussion_followup(
+            ParentDiscussionId = Discussion.objects.get(id=post_id),
+            User_type=user_type,
+            User_id=user_id,
+            description=description,
+        )
+        new_followup.save()
+    return Response(1)

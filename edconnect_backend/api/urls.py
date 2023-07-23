@@ -22,5 +22,14 @@ urlpatterns = [
         path("start-attendance/",views.Start_attendance,name="start_attendance"),
         path("check-ta-session/",views.Check_ta_session,name="check_ta_session"),
         path("get-attendance-list/",views.Get_attendance_list,name="get_attendance_list"),
+        path("get-announcements-list/",views.Get_announcement_list,name="get_announcements_list"),
+        path("make-announcement/",views.Make_announcement,name="make_announcement"),
+        path("get-ta-info/",views.Get_ta_info,name="get_ta_info"),
+        path("get-ta-list/",views.Get_ta_list,name="get_ta_list"),
+        path("get-student-list/",views.Get_student_list,name="get_student_list"),
+        path("get-discussion-list/",views.Get_discussion_list,name="get_discussion_list"),
+        path("get-discussionfollowups-list/<str:id>/",views.Get_discussionfollowups_list,name="get_discussionfollowups_list"),
+        path("add-discussion/",views.Add_discussion,name="add_discussion"),
+        path("add-followup/",views.Add_followup,name="add_followup"),
         
 ]

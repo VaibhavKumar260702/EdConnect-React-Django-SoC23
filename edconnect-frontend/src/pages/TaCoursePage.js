@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import {  BrowserRouter as Router, Switch,Routes, Route, Link ,useLocation, useSearchParams } from "react-router-dom";
+import {useLocation } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import TaAttendanceComp from './TaAttendanceComp'
+import TaClassComp from "./TaClassComp";
+import TaAnnouncementsComp from "./TaAnnouncementsComp";
+import TaDiscussionComp from "./TaDiscussionComp";
 
 const TaCoursePage = () => {
   const location = useLocation();
@@ -30,17 +33,20 @@ const TaCoursePage = () => {
       <Container>
         <Navbar.Brand onClick={(e)=>setactive("home")}>{course.courseCode} </Navbar.Brand>
         <Nav className="me-auto">
-          <Nav.Link >Announcement</Nav.Link>
-          <Nav.Link >Discussion</Nav.Link>
+          <Nav.Link onClick={(e)=>setactive("announcements")}>Announcement</Nav.Link>
+          <Nav.Link onClick={(e)=>setactive("discussion")} >Discussion</Nav.Link>
           <Nav.Link onClick={(e)=>setactive("attendance")}>Attendance</Nav.Link>
           <Nav.Link >Assignment</Nav.Link>
-          <Nav.Link >Class</Nav.Link>
+          <Nav.Link onClick={(e)=>setactive("class")}>Class</Nav.Link>
         </Nav>
       </Container>
     </Navbar>
 
     {active === "home" && <Homecomp/>}
+    {active === "announcements" && <TaAnnouncementsComp taInfo={taInfo}/>}
     {active === "attendance" && <TaAttendanceComp taInfo={taInfo}/>}
+    {active === "discussion" && <TaDiscussionComp taInfo={taInfo}/>}
+    {active === "class" && <TaClassComp taInfo={taInfo}/>}
 
     </div>
   )
