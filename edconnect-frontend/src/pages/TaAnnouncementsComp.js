@@ -95,7 +95,7 @@ const TaAnnouncementsComp = ({ taInfo }) => {
       <div className="align-items-left">
         {announcements_list.map((announcement, i) => (
           <div key={announcement.id} className="col-sm-5 col-md-10">
-            <Card className="my-5 mx-3">
+            <Card className="my-1 mx-3">
               <Card.Body>
                 <Card.Title>{`${i + 1}) ${announcement.title}`}</Card.Title>
                 <Card.Text>{announcement.description}</Card.Text>

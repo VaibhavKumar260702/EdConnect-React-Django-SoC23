@@ -31,5 +31,8 @@ urlpatterns = [
         path("get-discussionfollowups-list/<str:id>/",views.Get_discussionfollowups_list,name="get_discussionfollowups_list"),
         path("add-discussion/",views.Add_discussion,name="add_discussion"),
         path("add-followup/",views.Add_followup,name="add_followup"),
+        path("get-filtered-discussion-list/",views.Get_filtered_discussion_list,name="get_filtered_discussion_list"),
+        path("edit-discussion/",views.Edit_discussion,name="edit_discussion"),
+
         
 ]

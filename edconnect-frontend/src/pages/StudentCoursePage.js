@@ -18,6 +18,9 @@ const StudentCoursePage = () => {
   const [taInfo,settainfo]=useState({});
 
   React.useEffect(() => {
+    if(localStorage.getItem('StudentTab') !==null){
+      setactive(localStorage.getItem('StudentTab'));
+    }
     getTaInfo();
   }, []);
 
@@ -42,11 +45,11 @@ const StudentCoursePage = () => {
     <div>
       <Navbar bg="dark" data-bs-theme="dark">
       <Container>
-        <Navbar.Brand onClick={(e)=>setactive("home")}>{courseCode} </Navbar.Brand>
+        <Navbar.Brand onClick={(e)=>{localStorage.setItem('StudentTab','home');setactive("home")}}>{courseCode} </Navbar.Brand>
         <Nav className="me-auto">
-          <Nav.Link onClick={(e)=>setactive("announcement")}>Announcement</Nav.Link>
-          <Nav.Link onClick={(e)=>setactive("discussion")}>Discussion</Nav.Link>
-          <Nav.Link onClick={(e)=>setactive("attendance")}>Attendance</Nav.Link>
+          <Nav.Link onClick={(e)=>{localStorage.setItem('StudentTab','announcement');setactive("announcement")}}>Announcement</Nav.Link>
+          <Nav.Link onClick={(e)=>{localStorage.setItem('StudentTab','discussion');setactive("discussion")}}>Discussion</Nav.Link>
+          <Nav.Link onClick={(e)=>{localStorage.setItem('StudentTab','attendance');setactive("attendance")}}>Attendance</Nav.Link>
           <Nav.Link >Assignment</Nav.Link>
           <Nav.Link >Class</Nav.Link>
         </Nav>

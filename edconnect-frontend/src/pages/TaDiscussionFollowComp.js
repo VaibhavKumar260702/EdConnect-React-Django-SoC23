@@ -6,7 +6,7 @@ import Form from "react-bootstrap/Form";
 
 const ParentDiscussion = ({ parentDiscussion }) => {
   return (
-    <Card bg="" text="white" className="my-5 mx-3 my-custom-card-bg">
+    <Card bg="" text="white" className="my-3 mx-3 my-custom-card-bg">
       <Card.Body>
         <Card.Title>{`Title : ${parentDiscussion.title}`}</Card.Title>
         <Card.Text>{parentDiscussion.description}</Card.Text>
@@ -20,12 +20,10 @@ const ParentDiscussion = ({ parentDiscussion }) => {
 
 const Reply = ({ i, reply }) => {
   return (
-    <Card className="my-5 mx-3">
+    <Card className="my-2 mx-3">
       <Card.Body>
         <Card.Text>{`${i + 1}) ${reply.description}`}</Card.Text>
-        <Card.Footer>
-          <small className="text-muted">{`${reply.User_type} | ${reply.Name} | ${reply.Roll} | ${reply.Date} | ${reply.Time}`}</small>
-        </Card.Footer>
+          <small className="text-muted small">{`${reply.User_type} | ${reply.Name} | ${reply.Roll} | ${reply.Date} | ${reply.Time}`}</small>
       </Card.Body>
     </Card>
   );

@@ -499,3 +499,101 @@ def Add_followup(request):
         )
         new_followup.save()
     return Response(1)
+
+@api_view(['POST'])
+def Get_filtered_discussion_list(request):
+    data = request.data
+    course_code = data['course_code']
+    discussion_user_type = int(data['discussion_user_type']) #like everyone,mine,students,TA
+    logged_user_type = data['logged_user_type'] # TA or Student 
+    user_id = int(data['id']) # id of logged user
+    post_type = int(data['post_type']) #like all,general,doubts
+    page_number = int(data['page_number'])
+    posts_per_page = 30
+    offset = (page_number - 1) * posts_per_page
+    try:
+        start_date = datetime.strptime(data['start_date'], '%Y-%m-%d').date() 
+        end_date = datetime.strptime(data['end_date'], '%Y-%m-%d').date() 
+    except:
+        return Response([[],0])
+    filtered_list = []
+    L = 0
+    if request.method == 'POST':
+        if logged_user_type == "TA" and discussion_user_type==1: # TA wants his posts
+            if post_type == 0: #all the posts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='ta_info', User_id=user_id,Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            elif post_type == 1: # general
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='ta_info', User_id=user_id,Discussion_type="General",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            else: #doubts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='ta_info', User_id=user_id,Discussion_type="Doubts",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+        elif logged_user_type == "Student" and discussion_user_type == 1 : #Student wants his posts
+            if post_type == 0: #all the posts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='student_info', User_id=user_id,Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            elif post_type == 1: # general
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='student_info', User_id=user_id,Discussion_type="General",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            else: #doubts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='student_info', User_id=user_id,Discussion_type="Doubts",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+        elif discussion_user_type==0 : # everyone's post 
+            if post_type == 0: #all the posts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code,Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            elif post_type == 1: # general
+                filtered_list = Discussion.objects.filter(CourseCode=course_code,Discussion_type="General",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            else: #doubts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code,Discussion_type="Doubts",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+        elif discussion_user_type==2 : # students post
+            if post_type == 0: #all the posts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='student_info',Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            elif post_type == 1: # general
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='student_info',Discussion_type="General",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            else: #doubts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='student_info',Discussion_type="Doubts",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+        elif discussion_user_type==3 : # TA's post
+            if post_type == 0: #all the posts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='ta_info',Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            elif post_type == 1: # general
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='ta_info',Discussion_type="General",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+            else: #doubts
+                filtered_list = Discussion.objects.filter(CourseCode=course_code, User_type__model='ta_info',Discussion_type="Doubts",Date__range=(start_date, end_date)).order_by('-Date', '-Time')
+        L = filtered_list.count()
+        filtered_list = filtered_list[offset:offset + posts_per_page]
+        desired_discussions_with_user_info = []
+        for discussion in filtered_list:
+            if discussion.User_type.model == 'ta_info':
+                user = Ta_info.objects.get(id=discussion.User_id)
+                user_type = 'TA'
+            else:
+                user = Student_info.objects.get(id=discussion.User_id)
+                user_type = 'Student'
+
+            user_info = {
+                'id':discussion.id,
+                'CourseCode': discussion.CourseCode,
+                'Date': discussion.Date,
+                'Time': discussion.Time.strftime('%H:%M:%S'),
+                'title': discussion.title,
+                'description': discussion.description,
+                'Name': user.Name,
+                'Roll': user.Roll,
+                'User_type': user_type,
+                'discussion_type':discussion.Discussion_type
+            }
+            desired_discussions_with_user_info.append(user_info)
+        return Response([desired_discussions_with_user_info,L])
+    
+
+@api_view(['POST'])
+def Edit_discussion(request):
+    data = request.data
+    discussion_id = int(data['id'])
+    title = data['title']
+    description = data['description']
+
+    if request.method == 'POST':
+        discussion = Discussion.objects.get(id=discussion_id)
+        discussion.title = title
+        discussion.description = description
+        discussion.save()
+        return Response(1)
+    
+    return Response(0)
+    

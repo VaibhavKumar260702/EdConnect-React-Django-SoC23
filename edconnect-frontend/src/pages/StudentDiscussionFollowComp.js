@@ -11,7 +11,7 @@ const ParentDiscussion = ({ parentDiscussion }) => {
         <Card.Title>{`Title : ${parentDiscussion.title}`}</Card.Title>
         <Card.Text>{parentDiscussion.description}</Card.Text>
         <Card.Footer>
-          <small className="">{`${parentDiscussion.User_type} | ${parentDiscussion.Name} | ${parentDiscussion.Roll} | ${parentDiscussion.Date} | ${parentDiscussion.Time} | ${parentDiscussion.discussion_type}`}</small>
+          <small className="text-muted">{`${parentDiscussion.User_type} | ${parentDiscussion.Name} | ${parentDiscussion.Roll} | ${parentDiscussion.Date} | ${parentDiscussion.Time} | ${parentDiscussion.discussion_type}`}</small>
         </Card.Footer>
       </Card.Body>
     </Card>
@@ -20,12 +20,10 @@ const ParentDiscussion = ({ parentDiscussion }) => {
 
 const Reply = ({ i, reply }) => {
   return (
-    <Card className="my-5 mx-3">
+    <Card className="my-2 mx-3">
       <Card.Body>
         <Card.Text>{`${i + 1}) ${reply.description}`}</Card.Text>
-        <Card.Footer>
-          <small className="text-muted">{`${reply.User_type} | ${reply.Name} | ${reply.Roll} | ${reply.Date} | ${reply.Time}`}</small>
-        </Card.Footer>
+          <small className="text-muted small">{`${reply.User_type} | ${reply.Name} | ${reply.Roll} | ${reply.Date} | ${reply.Time}`}</small>
       </Card.Body>
     </Card>
   );

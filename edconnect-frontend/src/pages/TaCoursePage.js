@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState ,useEffect} from "react";
 import {useLocation } from "react-router-dom";
 import Container from "react-bootstrap/Container";
 import Nav from "react-bootstrap/Nav";
@@ -14,7 +14,13 @@ const TaCoursePage = () => {
   const course = location.state[1];
   const taID = location.pathname.split("/").slice(-2)[0];
   let [active,setactive] = useState("home");
-  // console.log(taInfo)
+
+  useEffect(() => {
+    if(localStorage.getItem('TAtab') !==null){
+      setactive(localStorage.getItem('TAtab'));
+    }
+  }, []);
+  
 
   const Homecomp = ()=>{
     return (
@@ -31,13 +37,13 @@ const TaCoursePage = () => {
     <div>
     <Navbar bg="dark" data-bs-theme="dark">
       <Container>
-        <Navbar.Brand onClick={(e)=>setactive("home")}>{course.courseCode} </Navbar.Brand>
+        <Navbar.Brand onClick={(e)=>{localStorage.setItem('TAtab','home');setactive("home")}}>{course.courseCode} </Navbar.Brand>
         <Nav className="me-auto">
-          <Nav.Link onClick={(e)=>setactive("announcements")}>Announcement</Nav.Link>
-          <Nav.Link onClick={(e)=>setactive("discussion")} >Discussion</Nav.Link>
-          <Nav.Link onClick={(e)=>setactive("attendance")}>Attendance</Nav.Link>
+          <Nav.Link onClick={(e)=>{localStorage.setItem('TAtab','announcements');setactive("announcements")}}>Announcement</Nav.Link>
+          <Nav.Link onClick={(e)=>{localStorage.setItem('TAtab','discussion');setactive("discussion")}} >Discussion</Nav.Link>
+          <Nav.Link onClick={(e)=>{localStorage.setItem('TAtab','attendance');setactive("attendance")}}>Attendance</Nav.Link>
           <Nav.Link >Assignment</Nav.Link>
-          <Nav.Link onClick={(e)=>setactive("class")}>Class</Nav.Link>
+          <Nav.Link onClick={(e)=>{localStorage.setItem('TAtab','class');setactive("class")}}>Class</Nav.Link>
         </Nav>
       </Container>
     </Navbar>
